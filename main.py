@@ -1,11 +1,11 @@
 import os
 import uvicorn
 
-from fastapi import FastAPI, Depends, HTTPException
+from fastapi import FastAPI, Depends
 from dotenv import load_dotenv
-from sqlmodel import Field, Session, SQLModel, create_engine, select
+from sqlmodel import Session, SQLModel, create_engine
 
-from models.models import User, BlogPost
+from blogging_app.models.models import User
 
 
 def setup_db_engine():
@@ -15,8 +15,7 @@ def setup_db_engine():
     db_name = os.getenv("POSTGRES_DB")
     db_host = os.getenv("POSTGRES_HOST")
     db_port = os.getenv("POSTGRES_PORT")
-    postgresql_url = f"postgresql://{db_username}:{db_password}@{db_host}:{db_port}/{db_name}"
-    print(postgresql_url)
+    postgresql_url = f"postgresql+psycopg2://{db_username}:{db_password}@{db_host}:{db_port}/{db_name}"
 
     return create_engine(postgresql_url, echo=True)
 
@@ -38,10 +37,14 @@ def app_version():
 
 @app.post("/register")
 def register(user: User, session: Session = Depends(get_session)):
-    session.add(user)
-    session.commit()
-    session.refresh(user)
-    return user
+    try:
+        session.add(user)
+        session.commit()
+        session.refresh(user)
+
+        return user
+    except Exception as e:
+        return {"error_msg": str(e)}
 
 
 if __name__ == "__main__":
