@@ -23,6 +23,9 @@ RUN apt-get update \
 
 
 WORKDIR /home/app
-COPY main.py requirements.txt /home/app
+COPY requirements.txt /home/app
 RUN pip install -r requirements.txt
+
+COPY main.py /home/app
+COPY blogging_app /home/app/blogging_app
 CMD ["python", "main.py"]
